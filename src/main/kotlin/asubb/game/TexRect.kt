@@ -6,7 +6,11 @@ import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES2
 import com.jogamp.opengl.GL3ES3
 import com.jogamp.opengl.util.texture.TextureIO
+import glm_.glm
+import glm_.mat4x4.Mat4
+import glm_.vec3.Vec3
 import java.io.File
+import kotlin.math.sin
 
 private const val posLocation = 0
 private const val colorLocation = 1
@@ -17,13 +21,15 @@ private const val strVertexShader = """
     layout (location = $posLocation) in vec3 aPos;
     layout (location = $colorLocation) in vec3 aColor;
     layout (location = $texLocation) in vec2 aTexCoord;
+    
+    uniform mat4 transform;
 
     out vec4 ourColor;
     out vec2 TexCoord;
 
     void main()
     {
-        gl_Position = vec4(aPos, 1.0);
+        gl_Position = transform * vec4(aPos, 1.0f);
         ourColor = vec4(aColor, 1.0);
         TexCoord = vec2(aTexCoord.x, aTexCoord.y);
     }
@@ -149,6 +155,7 @@ class TexRect : Scene {
         val tex2location = requireNotNull(getUniformLocation(program, "texture2")) { "texture2" }
         uniform1i(tex1location, 0)
         uniform1i(tex2location, 1)
+
     }
 
     fun Kgl.initializeProgram() {
@@ -196,6 +203,13 @@ class TexRect : Scene {
         bindTexture(GL_TEXTURE_2D, texture1)
         activeTexture(GL_TEXTURE1)
         bindTexture(GL_TEXTURE_2D, texture2)
+
+        var trans = Mat4(1.0f);
+        val angle = sin(System.currentTimeMillis().toDouble()/ 10000.0).toFloat() * 360.0f
+        trans = glm.rotate(trans, glm.radians(angle), Vec3(0.0, 0.0, 1.0));
+        trans = glm.scale(trans, Vec3(0.5, 0.5, 0.5));
+        val transformLoc = requireNotNull(getUniformLocation(program, "transform"))
+        uniformMatrix4fv(transformLoc, false, trans.array)
 
         useProgram(program)
         bindVertexArray(vao)
