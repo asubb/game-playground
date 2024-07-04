@@ -10,27 +10,26 @@ import glm_.glm
 import glm_.mat4x4.Mat4
 import glm_.vec3.Vec3
 import java.io.File
+import java.nio.ByteBuffer
 import kotlin.math.sin
 
 private const val posLocation = 0
-private const val colorLocation = 1
-private const val texLocation = 2
+private const val texLocation = 1
 
 private const val strVertexShader = """
     #version 330 core
     layout (location = $posLocation) in vec3 aPos;
-    layout (location = $colorLocation) in vec3 aColor;
     layout (location = $texLocation) in vec2 aTexCoord;
     
-    uniform mat4 transform;
-
-    out vec4 ourColor;
+    uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
+    
     out vec2 TexCoord;
 
     void main()
     {
-        gl_Position = transform * vec4(aPos, 1.0f);
-        ourColor = vec4(aColor, 1.0);
+        gl_Position = projection * view * model * vec4(aPos, 1.0);
         TexCoord = vec2(aTexCoord.x, aTexCoord.y);
     }
     """
@@ -39,20 +38,18 @@ private const val strFragmentShader = """
     #version 330 core
     out vec4 FragColor;
 
-    in vec4 ourColor;
     in vec2 TexCoord;
 
-    // texture samplers
     uniform sampler2D texture1;
     uniform sampler2D texture2;
 
     void main()
     {
-        FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.5) * ourColor;
+        FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.4);
     }
     """
 
-class TexRect : Scene {
+class CoordSystem : Scene {
     private var program: Program = 0
     private var texture1: Texture = 0
     private var texture2: Texture = 0
@@ -65,17 +62,47 @@ class TexRect : Scene {
         initializeProgram()
         val vertices = FloatBuffer(
             floatArrayOf(
-                // positions        // colors         // texture coords
-                00.5f, 00.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-                00.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-                -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-                -0.5f, 00.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // top left
-            )
-        )
-        val indices = IntBuffer(
-            intArrayOf(
-                0, 1, 3, // first triangle
-                1, 2, 3  // second triangle
+                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+                0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+                -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+
+                -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
             )
         )
 
@@ -83,21 +110,14 @@ class TexRect : Scene {
         bindVertexArray(vao)
         vbo = createBuffer()
         bindBuffer(GL_ARRAY_BUFFER, vbo)
-        bufferData(GL_ARRAY_BUFFER, vertices, Buffers.SIZEOF_FLOAT * 32, GL_STATIC_DRAW)
-        ebo = createBuffer()
-        bindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo)
-        bufferData(GL_ELEMENT_ARRAY_BUFFER, indices, Buffers.SIZEOF_INT * 6, GL_STATIC_DRAW)
+        bufferData(GL_ARRAY_BUFFER, vertices, Buffers.SIZEOF_FLOAT * 5 * 36, GL_STATIC_DRAW)
 
         // position attribute
-        vertexAttribPointer(posLocation, 3, GL_FLOAT, false, Buffers.SIZEOF_FLOAT * 8, 0)
+        vertexAttribPointer(posLocation, 3, GL_FLOAT, false, Buffers.SIZEOF_FLOAT * 5, 0)
         enableVertexAttribArray(posLocation)
 
-        // color attribute
-        vertexAttribPointer(colorLocation, 3, GL_FLOAT, false, Buffers.SIZEOF_FLOAT * 8, Buffers.SIZEOF_FLOAT * 3)
-        enableVertexAttribArray(colorLocation)
-
         // texture coordinate
-        vertexAttribPointer(texLocation, 2, GL_FLOAT, false, Buffers.SIZEOF_FLOAT * 8, Buffers.SIZEOF_FLOAT * 6)
+        vertexAttribPointer(texLocation, 2, GL_FLOAT, false, Buffers.SIZEOF_FLOAT * 5, Buffers.SIZEOF_FLOAT * 3)
         enableVertexAttribArray(texLocation)
 
         // load and create texture
@@ -123,7 +143,7 @@ class TexRect : Scene {
             0,
             data.pixelFormat,
             GL_UNSIGNED_BYTE,
-            ByteBuffer(data.buffer as java.nio.ByteBuffer)
+            ByteBuffer(data.buffer as ByteBuffer)
         )
         // texture 2
         texture2 = createTexture()
@@ -147,7 +167,7 @@ class TexRect : Scene {
             0,
             GL_RGB,
             GL_UNSIGNED_BYTE,
-            ByteBuffer(data2.buffer as java.nio.ByteBuffer)
+            ByteBuffer(data2.buffer as ByteBuffer)
         )
 
         useProgram(program)
@@ -155,6 +175,8 @@ class TexRect : Scene {
         val tex2location = requireNotNull(getUniformLocation(program, "texture2")) { "texture2" }
         uniform1i(tex1location, 0)
         uniform1i(tex2location, 1)
+
+        enable(GL_DEPTH_TEST);
     }
 
     fun Kgl.initializeProgram() {
@@ -196,23 +218,50 @@ class TexRect : Scene {
     }
 
     override fun display(gl: Kgl) = with(gl) {
-        clear(GL.GL_COLOR_BUFFER_BIT);
+        clear(GL.GL_COLOR_BUFFER_BIT or GL.GL_DEPTH_BUFFER_BIT);
 
         activeTexture(GL_TEXTURE0)
         bindTexture(GL_TEXTURE_2D, texture1)
         activeTexture(GL_TEXTURE1)
         bindTexture(GL_TEXTURE_2D, texture2)
 
-        var trans = Mat4(1.0f);
-        val angle = sin(System.currentTimeMillis().toDouble()/ 10000.0).toFloat() * 360.0f
-        trans = glm.rotate(trans, glm.radians(angle), Vec3(0.0, 0.0, 1.0));
-        trans = glm.scale(trans, Vec3(0.5, 0.5, 0.5));
-        val transformLoc = requireNotNull(getUniformLocation(program, "transform"))
-        uniformMatrix4fv(transformLoc, false, trans.array)
+        var view = Mat4(1.0f);
+        val angle = sin(System.currentTimeMillis().toDouble() / 10000.0).toFloat() * 360.0f
+        view = glm.translate(view, Vec3(0.0f, 0.0f, -10.0f));
+        view = glm.rotate(view, glm.radians(angle), Vec3(0f, 1f, 0f))
+        val viewLoc = requireNotNull(getUniformLocation(program, "view"))
+        uniformMatrix4fv(viewLoc, false, view.array)
+
+        val projection = glm.perspective(glm.radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+        val projectionLoc = requireNotNull(getUniformLocation(program, "projection"))
+        uniformMatrix4fv(projectionLoc, false, projection.array)
 
         useProgram(program)
         bindVertexArray(vao)
-        drawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT)
+        val cubePositions = listOf(
+            Vec3(0.0f, 0.0f, 0.0f),
+            Vec3(2.0f, 5.0f, -15.0f),
+            Vec3(-1.5f, -2.2f, -2.5f),
+            Vec3(-3.8f, -2.0f, -12.3f),
+            Vec3(2.4f, -0.4f, -3.5f),
+            Vec3(-1.7f, 3.0f, -7.5f),
+            Vec3(1.3f, -2.0f, -2.5f),
+            Vec3(1.5f, 2.0f, -2.5f),
+            Vec3(1.5f, 0.2f, -1.5f),
+            Vec3(-1.3f, 1.0f, -1.5f)
+        );
+        cubePositions.forEachIndexed { i, cubePos ->
+            var model = Mat4(1.0f);
+            model = glm.translate(model, cubePos)
+            val angle = if (i > 0)
+                sin(System.currentTimeMillis().toDouble() / 10000.0 / i).toFloat() * 360.0f * i
+            else
+                0f
+            model = glm.rotate(model, glm.radians(angle), Vec3(1.0f, 0.0f, 0.0f));
+            val modelLoc = requireNotNull(getUniformLocation(program, "model"))
+            uniformMatrix4fv(modelLoc, false, model.array)
+            drawArrays(GL_TRIANGLES, 0, 36)
+        }
     }
 
     override fun reshape(gl: Kgl, width: Int, height: Int) = with(gl) {

@@ -31,7 +31,7 @@ class JoglGlEngine(
         window.setPointerVisible(true)
         window.confinePointer(false)
         window.setTitle(title)
-        window.setSize(500, 500)
+        window.setSize(800, 600)
 
         window.setVisible(true)
 
