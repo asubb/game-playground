@@ -72,6 +72,7 @@ class JoglGlEngine(
     }
 
     override fun keyPressed(e: KeyEvent) {
+        scene.keyPressed(e.keyCode)
     }
 
     override fun keyReleased(e: KeyEvent) {
@@ -93,12 +94,14 @@ class JoglGlEngine(
     }
 
     override fun mouseMoved(e: MouseEvent) {
+        scene.mouseMoved(e.x, e.y)
     }
 
     override fun mouseDragged(e: MouseEvent) {
     }
 
     override fun mouseWheelMoved(e: MouseEvent) {
+        scene.mouseWheelMoved(e.rotation[0], e.rotation[1])
     }
 
     protected fun quit() {
