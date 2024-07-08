@@ -33,6 +33,7 @@ unsigned int VAO;
 glGenVertexArrays(1, &VAO);  
 glBindVertexArray(VAO);
 unsigned int VBO;
+glGenBuffers(1, &VBO);  
 glBindBuffer(GL_ARRAY_BUFFER, VBO);
 glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -53,19 +54,19 @@ with(gl) {
 
 Such code doesn't look very much like Kotlin, but I believe I can abstract this code away enough and keep it isolated to a certain places.
 
-The biggest difference between the tutorial and what I need to do is how do you create a canvas to draw in and listen to key/mouse/touch events what's so ever. That part is very platform specific. As I'm currently on JVM (less moving parts for now, right?), jogl may have some tutorials that I can get an inspiration in. 
-Jogl wiki refers to multiple tutorials but there is one written on Java and Kotlin is easy to read, and it even follows the same articles for it to even be better [Hello triangle] (https://github.com/jvm-graphics-labs/hello-triangle).
+The biggest difference between the tutorial and what I need to do is how do you create a canvas to draw in and listen to key/mouse/touch events what's so ever. That part is very platform specific. As I'm currently on JVM (less moving parts for now, remember?), jogl may have some tutorials that I can take an inspiration from. 
+Jogl wiki refers to multiple tutorials but there is one written on Java and Kotlin and is easy to read, it even follows the same articles for it to be even better [Hello triangle](https://github.com/jvm-graphics-labs/hello-triangle).
 
-So, currently it seems I have all the pieces to the puzzle, and can finish "Quick Start" tutorials. It turns out that is not quite true.
+So, currently it seems I have all the pieces to the puzzle, and can finish "Quick Start" tutorials. And,... it turns out that is not quite true.
 
-While working on "Transformations" it turns out there is another library being used to implement vectors and matrices math -- `glm`. And while I did search for Kotlin ports, there are multiple JVM based like these:
+While working on "Transformations" there is another library being used to implement vectors and matrices math on CPU -- `glm`. And while I did search there are multiple JVM based like these:
 1. Java native [JOML](https://github.com/JOML-CI/JOML)
 2. Kotlin port of [glm](https://github.com/java-graphics/glm)
 
-While JVM locked libraries is not what I'm looking for, Kotlin port of glm while is working on JVM, it has work also in progress multiplatform support. Though it's been in works for quite a while. I did try to revive it locally and see if I can make it work, but it seems to be not an easy job at this point. The decision was made to use it for now as I stick with JVM, but later on address this issue by either duplicating required functionality within my own application, or spend more time trying to figure out how to move the multiplatform support forward.
+While JVM locked libraries is not what I'm looking for, Kotlin port of glm while currently is working on JVM, it has also work in progress for multiplatform support. Quite promising, though it's been in works for quite a while. I did try to revive it locally and see if I can make it work, but that tuned out to be not an easy job at this point. The decision was made to use it for now as I stick with JVM, but later on address this issue by either duplicating required functionality within my own application, or spend more time trying to figure out how to move the multiplatform support for the library forward.
 
-And that is all what was required for me to finish with the tutorials. You can find [my attempt on the GitHub](https://github.com/asubb/game-playground/tree/game-for-my-daughter).
+And that is all what was required for me to finish with the tutorials. You can find [my attempts on the GitHub](https://github.com/asubb/game-playground/tree/game-for-my-daughter).
 
-Current state of things for Kotlin Multiplatform game development seems to be at the very early stages, while being interesting as idea -- right everying on one language, it is lacking robust and wide community, the information is quite scarce as well as the choice of the libraries. But it is definitely has already something to start with.
+Current state of things for Kotlin Multiplatform game development seems to be at the very early stages, while being interesting as an idea -- write everything on one language, it is lacking robust and wide community, the information is quite scarce as well as the choice of the libraries. But it is definitely has already something to start with.
 
 As they say, the harder the journey, the better the story, right?
