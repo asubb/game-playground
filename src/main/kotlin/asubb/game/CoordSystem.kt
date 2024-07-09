@@ -1,17 +1,14 @@
 package asubb.game
 
+import asubb.game.jogl.JoglTextureIO
 import com.danielgergely.kgl.*
 import com.jogamp.common.nio.Buffers
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES2
 import com.jogamp.opengl.GL3ES3
-import com.jogamp.opengl.util.texture.TextureIO
 import glm_.glm
 import glm_.mat4x4.Mat4
-import glm_.toString
 import glm_.vec3.Vec3
-import java.io.File
-import java.nio.ByteBuffer
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -51,7 +48,7 @@ private const val strFragmentShader = """
     }
     """
 
-class CoordSystem : Scene {
+class CoordSystem() : Scene {
     private var program: Program = 0
     private var texture1: Texture = 0
     private var texture2: Texture = 0
@@ -69,7 +66,7 @@ class CoordSystem : Scene {
     private var roll = 0.0f
     private var fov = 45.0f
 
-    override fun init(gl: Kgl) = with(gl) {
+    override fun init(gl: Kgl, textureIO: TextureIO) = with(gl) {
         clearColor(1.0f, 1.0f, 1.0f, 0.0f)
         initializeProgram()
         val vertices = FloatBuffer(
@@ -140,12 +137,7 @@ class CoordSystem : Scene {
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        val data = TextureIO.newTextureData(
-            (gl as KglJogl).gl.glProfile, // TODO gl should be private
-            File("/Users/asubbotin/projects/game-playground/src/main/resources/img.png"),
-            false,
-            null
-        ).also { println("Texture data: $it") }
+        val data = textureIO.loadTextureData("/Users/asubbotin/projects/game-playground/src/main/resources/img.png")
         texImage2D(
             GL_TEXTURE_2D,
             0,
@@ -155,7 +147,7 @@ class CoordSystem : Scene {
             0,
             data.pixelFormat,
             GL_UNSIGNED_BYTE,
-            ByteBuffer(data.buffer as ByteBuffer)
+            data.buffer,
         )
         // texture 2
         texture2 = createTexture()
@@ -164,12 +156,7 @@ class CoordSystem : Scene {
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        val data2 = TextureIO.newTextureData(
-            (gl as KglJogl).gl.glProfile, // TODO gl should be private
-            File("/Users/asubbotin/projects/game-playground/src/main/resources/img2.png"),
-            false,
-            null
-        ).also { println("Texture data: $it") }
+        val data2 = textureIO.loadTextureData("/Users/asubbotin/projects/game-playground/src/main/resources/img2.png")
         texImage2D(
             GL_TEXTURE_2D,
             0,
@@ -179,7 +166,7 @@ class CoordSystem : Scene {
             0,
             GL_RGB,
             GL_UNSIGNED_BYTE,
-            ByteBuffer(data2.buffer as ByteBuffer)
+            data2.buffer
         )
 
         useProgram(program)
@@ -303,7 +290,6 @@ class CoordSystem : Scene {
     }
 
     override fun reshape(gl: Kgl, width: Int, height: Int) = with(gl) {
-        println("Viewport reshape: width=$width height=$height")
         viewport(0, 0, width, height)
     }
 
@@ -311,33 +297,16 @@ class CoordSystem : Scene {
     }
 
     override fun keyPressed(keyCode: Short) {
-        println("keyPressed('${keyCode.toInt().toChar()}'|0x${keyCode.toInt().toString(16)})")
         val cameraSpeed = 2.5f * deltaTime;
         when (keyCode.toInt()) {
-            'W'.code -> {
-                println("forward")
-                cameraPos = cameraPos + cameraFront * cameraSpeed;
-            }
-
-            'A'.code -> {
-                println("left")
-                cameraPos = cameraPos - glm.normalize(glm.cross(cameraFront, cameraUp)) * cameraSpeed;
-            }
-
-            'S'.code -> {
-                println("back")
-                cameraPos = cameraPos - cameraFront * cameraSpeed;
-            }
-
-            'D'.code -> {
-                println("right")
-                cameraPos = cameraPos + glm.normalize(glm.cross(cameraFront, cameraUp)) * cameraSpeed;
-            }
+            'W'.code -> cameraPos = cameraPos + cameraFront * cameraSpeed
+            'A'.code -> cameraPos = cameraPos - glm.normalize(glm.cross(cameraFront, cameraUp)) * cameraSpeed
+            'S'.code -> cameraPos = cameraPos - cameraFront * cameraSpeed
+            'D'.code -> cameraPos = cameraPos + glm.normalize(glm.cross(cameraFront, cameraUp)) * cameraSpeed
         }
     }
 
     override fun mouseMoved(x: Int, y: Int) {
-        println("mouseMoved(x: $x y: $y)")
         var xoffset = x.toFloat() - lastX
         var yoffset = lastY - y.toFloat() // reversed since y-coordinates range from bottom to top
         lastX = x.toFloat()
@@ -356,7 +325,6 @@ class CoordSystem : Scene {
     }
 
     override fun mouseWheelMoved(x: Float, y: Float) {
-        println("mouseWheelMoved(x: $x y: $y)")
         fov -= y
         if (fov < 1.0f)
             fov = 1.0f;

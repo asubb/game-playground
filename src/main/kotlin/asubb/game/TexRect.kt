@@ -5,11 +5,9 @@ import com.jogamp.common.nio.Buffers
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES2
 import com.jogamp.opengl.GL3ES3
-import com.jogamp.opengl.util.texture.TextureIO
 import glm_.glm
 import glm_.mat4x4.Mat4
 import glm_.vec3.Vec3
-import java.io.File
 import kotlin.math.sin
 
 private const val posLocation = 0
@@ -60,7 +58,7 @@ class TexRect : Scene {
     private var vbo: GlBuffer = 0
     private var ebo: GlBuffer = 0
 
-    override fun init(gl: Kgl) = with(gl) {
+    override fun init(gl: Kgl, textureIO: TextureIO) = with(gl) {
         clearColor(1.0f, 1.0f, 1.0f, 0.0f)
         initializeProgram()
         val vertices = FloatBuffer(
@@ -108,12 +106,7 @@ class TexRect : Scene {
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        val data = TextureIO.newTextureData(
-            (gl as KglJogl).gl.glProfile, // TODO gl should be private
-            File("/Users/asubbotin/projects/game-playground/src/main/resources/img.png"),
-            false,
-            null
-        ).also { println("Texture data: $it") }
+        val data = textureIO.loadTextureData("/Users/asubbotin/projects/game-playground/src/main/resources/img.png")
         texImage2D(
             GL_TEXTURE_2D,
             0,
@@ -123,7 +116,7 @@ class TexRect : Scene {
             0,
             data.pixelFormat,
             GL_UNSIGNED_BYTE,
-            ByteBuffer(data.buffer as java.nio.ByteBuffer)
+            data.buffer
         )
         // texture 2
         texture2 = createTexture()
@@ -132,12 +125,7 @@ class TexRect : Scene {
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        val data2 = TextureIO.newTextureData(
-            (gl as KglJogl).gl.glProfile, // TODO gl should be private
-            File("/Users/asubbotin/projects/game-playground/src/main/resources/img2.png"),
-            false,
-            null
-        ).also { println("Texture data: $it") }
+        val data2 = textureIO.loadTextureData("/Users/asubbotin/projects/game-playground/src/main/resources/img2.png")
         texImage2D(
             GL_TEXTURE_2D,
             0,
@@ -147,7 +135,7 @@ class TexRect : Scene {
             0,
             GL_RGB,
             GL_UNSIGNED_BYTE,
-            ByteBuffer(data2.buffer as java.nio.ByteBuffer)
+            data2.buffer
         )
 
         useProgram(program)

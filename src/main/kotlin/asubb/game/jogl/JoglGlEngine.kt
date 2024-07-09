@@ -1,5 +1,8 @@
-package asubb.game
+package asubb.game.jogl
 
+import asubb.game.Scene
+import com.danielgergely.kgl.DebugKgl
+import com.danielgergely.kgl.Kgl
 import com.danielgergely.kgl.KglJogl
 import com.jogamp.newt.event.*
 import com.jogamp.newt.opengl.GLWindow
@@ -9,11 +12,12 @@ import com.jogamp.opengl.util.Animator
 class JoglGlEngine(
     title: String,
     private val scene: Scene,
+    private val debug: Boolean = false,
 ) : GLEventListener, KeyListener, MouseListener {
 
     private val DEBUG = false
-    protected val window: GLWindow
-    protected val animator: Animator
+    private val window: GLWindow
+    private val animator: Animator
 
     init {
         val glProfile = GLProfile.get(GLProfile.GL3)
@@ -25,12 +29,12 @@ class JoglGlEngine(
             window.setContextCreationFlags(GLContext.CTX_OPTION_DEBUG)
         }
 
-        window.setUndecorated(false)
-        window.setAlwaysOnTop(false)
+        window.isUndecorated = false
+        window.isAlwaysOnTop = false
         window.setFullscreen(false)
-        window.setPointerVisible(true)
+        window.isPointerVisible = true
         window.confinePointer(false)
-        window.setTitle(title)
+        window.title = title
         window.setSize(800, 600)
 
         window.setVisible(true)
@@ -55,20 +59,39 @@ class JoglGlEngine(
         })
     }
 
+    private fun kglJogl(drawable: GLAutoDrawable): Kgl {
+        val gl = drawable.gl.gL3
+        return if (debug) {
+            DebugKgl(KglJogl(gl),
+                {
+                },
+                {
+                    val error = gl.glGetError()
+                    if (error != 0) {
+                        val stackTrace = Thread.currentThread().stackTrace.toList()
+                        println("[ERROR] $it -> $error: \n$stackTrace")
+                    }
+                }
+            )
+        } else {
+            KglJogl(gl)
+        }
+    }
+
     override fun init(drawable: GLAutoDrawable) {
-        scene.init(KglJogl(drawable.gl.gL3))
+        scene.init(kglJogl(drawable), JoglTextureIO(drawable.gl))
     }
 
     override fun display(drawable: GLAutoDrawable) {
-        scene.display(KglJogl(drawable.gl.gL3))
+        scene.display(kglJogl(drawable))
     }
 
     override fun reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int) {
-        scene.reshape(KglJogl(drawable.gl.gL3), width, height)
+        scene.reshape(kglJogl(drawable), width, height)
     }
 
     override fun dispose(drawable: GLAutoDrawable) {
-        scene.end(KglJogl(drawable.gl.gL3))
+        scene.end(kglJogl(drawable))
     }
 
     override fun keyPressed(e: KeyEvent) {

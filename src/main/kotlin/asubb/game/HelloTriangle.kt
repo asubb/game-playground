@@ -1,11 +1,10 @@
 package asubb.game
 
+import asubb.game.jogl.JoglTextureIO
 import com.danielgergely.kgl.*
 import com.jogamp.common.nio.Buffers
-import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES2
-import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3ES3
 import kotlin.math.absoluteValue
 import kotlin.math.sin
@@ -54,7 +53,7 @@ class HelloTriangle : Scene {
      * Called after the window and OpenGL are initialized. Called exactly once, before the main loop.
      * @param gl
      */
-    override fun init(gl: Kgl) = with(gl) {
+    override fun init(gl: Kgl, textureIO: TextureIO) = with(gl) {
         clearColor(1.0f, 1.0f, 1.0f, 0.0f)
         initializeProgram()
 
