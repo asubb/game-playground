@@ -1,4 +1,11 @@
 package asubb.game.jogl
 
-class ConsoleLogger {
+import asubb.game.Logger
+
+
+class ConsoleLogger : Logger {
+    override fun log(message: () -> String) {
+        println(message())
+    }
+
 }

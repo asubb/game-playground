@@ -1,4 +1,5 @@
 package asubb.game
 
-class Time {
+interface Time {
+    fun getCurrentTime(): Long
 }

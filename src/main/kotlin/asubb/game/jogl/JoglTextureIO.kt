@@ -4,13 +4,12 @@ import asubb.game.TextureData
 import asubb.game.TextureIO
 import com.danielgergely.kgl.ByteBuffer
 import com.jogamp.opengl.GL
-import java.io.File
 
 class JoglTextureIO(private val gl: GL) : TextureIO {
     override fun loadTextureData(path: String): TextureData {
         val data = com.jogamp.opengl.util.texture.TextureIO.newTextureData(
             gl.glProfile,
-            File(path),
+            requireNotNull(this::class.java.getResourceAsStream(path)) { "Missing resource $path" },
             false,
             null
         )
