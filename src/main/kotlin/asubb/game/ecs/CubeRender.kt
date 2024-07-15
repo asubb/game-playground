@@ -1,14 +1,14 @@
-package asubb.game
+package asubb.game.ecs
 
+import asubb.game.FragmentShader
+import asubb.game.ShaderProgram
+import asubb.game.TextureIO
+import asubb.game.VertexShader
 import com.danielgergely.kgl.*
 import com.jogamp.common.nio.Buffers
-import com.jogamp.opengl.GL2ES2
+import glm_.mat4x4.Mat4
 
-class Cube(
-    override val position: Vector,
-    override val size: Vector,
-    override val rotation: Vector,
-) : Component, Renderable, Positionable, Scalable, Rotatable {
+class CubeRender : Render {
 
     private val posLocation = 0
     private val texLocation = 1
@@ -17,11 +17,15 @@ class Cube(
     layout (location = $posLocation) in vec3 aPos;
     layout (location = $texLocation) in vec2 aTexCoord;
     
+    uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
+    
     out vec2 TexCoord;
 
     void main()
     {
-        gl_Position = vec4(aPos, 1.0);
+        gl_Position = projection * view * model * vec4(aPos, 1.0);
         TexCoord = vec2(aTexCoord.x, aTexCoord.y);
     }
     """
@@ -45,12 +49,17 @@ class Cube(
     private var vbo: GlBuffer = 0
     private var texture1: Texture = 0
     private var texture2: Texture = 0
+    private var wasInitialized: Boolean = false
+
+    override val initialized: Boolean
+        get() = wasInitialized
 
     override fun init(gl: Kgl, textureIO: TextureIO) = with(gl) {
+        wasInitialized = true
         program = ShaderProgram(
             gl,
-            Shader(gl, GL2ES2.GL_VERTEX_SHADER, strVertexShader),
-            Shader(gl, GL2ES2.GL_FRAGMENT_SHADER, strFragmentShader)
+            VertexShader(gl, strVertexShader),
+            FragmentShader(gl, strFragmentShader)
         )
 
         val vertices = FloatBuffer(
@@ -160,8 +169,15 @@ class Cube(
         uniform1i(tex2location, 1)
     }
 
-    override fun draw(gl: Kgl) = with(gl) {
-        enable(GL_DEPTH_TEST);
+    override fun draw(gl: Kgl, model: Mat4, view: Mat4, projection: Mat4) = with(gl) {
+        program.use()
+        val viewLoc = program.getUniformLocation("view")
+        uniformMatrix4fv(viewLoc, false, view.array)
+        val projectionLoc = program.getUniformLocation("projection")
+        uniformMatrix4fv(projectionLoc, false, projection.array)
+        val modelLoc = program.getUniformLocation("model")
+        uniformMatrix4fv(modelLoc, false, model.array)
+
         activeTexture(GL_TEXTURE0)
         bindTexture(GL_TEXTURE_2D, texture1)
         activeTexture(GL_TEXTURE1)

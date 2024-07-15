@@ -40,9 +40,9 @@ class ShaderProgram(
     }
 }
 
-class Shader(
+sealed class Shader(
     private val gl: Kgl,
-    shaderType: Int,
+    shaderType: ShaderType,
     shaderFile: String,
 ) {
 
@@ -50,21 +50,15 @@ class Shader(
 
     init {
         with(gl) {
-            shader = requireNotNull(createShader(shaderType)) { "GL ERROR ${getError()}" }
+            shader = requireNotNull(createShader(shaderType.value)) { "GL ERROR ${getError()}" }
             shaderSource(shader, shaderFile)
 
             compileShader(shader)
 
             val strInfoLog = getShaderInfoLog(shader)
 
-            var strShaderType = ""
-            when (shaderType) {
-                GL2ES2.GL_VERTEX_SHADER -> strShaderType = "vertex"
-                GL3ES3.GL_GEOMETRY_SHADER -> strShaderType = "geometry"
-                GL2ES2.GL_FRAGMENT_SHADER -> strShaderType = "fragment"
-            }
             if (!strInfoLog.isNullOrEmpty()) {
-                throw IllegalStateException("Can't compile shader ($this) $strInfoLog")
+                throw IllegalStateException("Can't compile shader $strInfoLog. Type=$shaderType, file:\n$shaderFile")
             }
         }
     }
@@ -80,4 +74,14 @@ class Shader(
     fun delete() {
         gl.deleteShader(shader)
     }
+}
+
+class VertexShader(gl: Kgl, shaderFile: String) : Shader(gl, ShaderType.VertexShader, shaderFile)
+class GeometryShader(gl: Kgl, shaderFile: String) : Shader(gl, ShaderType.GeometryShader, shaderFile)
+class FragmentShader(gl: Kgl, shaderFile: String) : Shader(gl, ShaderType.FragmentShader, shaderFile)
+
+enum class ShaderType(val value: Int) {
+    VertexShader(GL2ES2.GL_VERTEX_SHADER),
+    GeometryShader(GL3ES3.GL_GEOMETRY_SHADER),
+    FragmentShader(GL2ES2.GL_FRAGMENT_SHADER),
 }

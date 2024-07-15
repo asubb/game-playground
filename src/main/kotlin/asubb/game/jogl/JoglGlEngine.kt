@@ -61,6 +61,7 @@ class JoglGlEngine(
 
     private fun kglJogl(drawable: GLAutoDrawable): Kgl {
         val gl = drawable.gl.gL3
+        val glu = com.jogamp.opengl.glu.GLU.createGLU(gl)
         return if (debug) {
             DebugKgl(KglJogl(gl),
                 {
@@ -69,7 +70,7 @@ class JoglGlEngine(
                     val error = gl.glGetError()
                     if (error != 0) {
                         val stackTrace = Thread.currentThread().stackTrace.toList()
-                        println("[ERROR] $it -> $error: \n$stackTrace")
+                        println("[ERROR] $it -> [$error]${glu.gluErrorString(error)}: \n${stackTrace.joinToString("\n")}")
                     }
                 }
             )
