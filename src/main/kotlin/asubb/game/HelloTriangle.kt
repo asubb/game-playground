@@ -41,7 +41,10 @@ private const val strFragmentShader = """
     """
 
 
-class HelloTriangle : Scene {
+class HelloTriangle(
+    private val time: Time,
+    private val logger: Logger,
+) : Scene {
 
     var vao: VertexArrayObject = 0
     var vao2: VertexArrayObject = 0
@@ -105,7 +108,7 @@ class HelloTriangle : Scene {
 
         linkProgram(program)
         val strInfoLog = getProgramInfoLog(program)
-        System.err.println("Linker info $strInfoLog")
+        logger.log { "Linker info $strInfoLog" }
 
         shaderList.forEach { detachShader(program, it) }
 
@@ -127,7 +130,7 @@ class HelloTriangle : Scene {
             GL3ES3.GL_GEOMETRY_SHADER -> strShaderType = "geometry"
             GL2ES2.GL_FRAGMENT_SHADER -> strShaderType = "fragment"
         }
-        System.err.println("Compiler lnfo log in $strShaderType shader: $strInfoLog")
+        logger.log { "Compiler lnfo log in $strShaderType shader: $strInfoLog" }
 
         return shader
     }
@@ -140,7 +143,7 @@ class HelloTriangle : Scene {
     override fun display(gl: Kgl) = with(gl) {
         clear(GL.GL_COLOR_BUFFER_BIT);
 
-        val value = sin(System.currentTimeMillis().toDouble() / 1000).absoluteValue.toFloat() * 3.0f
+        val value = sin(time.getCurrentTime().toDouble() / 1000).absoluteValue.toFloat() * 3.0f
         val vertexColorLocation = requireNotNull(getUniformLocation(program, "ourColor"))
         useProgram(program)
 

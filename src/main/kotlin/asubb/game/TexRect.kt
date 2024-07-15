@@ -50,7 +50,10 @@ private const val strFragmentShader = """
     }
     """
 
-class TexRect : Scene {
+class TexRect(
+    private val logger: Logger,
+    private val time: Time,
+) : Scene {
     private var program: Program = 0
     private var texture1: Texture = 0
     private var texture2: Texture = 0
@@ -106,7 +109,7 @@ class TexRect : Scene {
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        val data = textureIO.loadTextureData("/Users/asubbotin/projects/game-playground/src/main/resources/img.png")
+        val data = textureIO.loadTextureData("/img.png")
         texImage2D(
             GL_TEXTURE_2D,
             0,
@@ -125,7 +128,7 @@ class TexRect : Scene {
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        val data2 = textureIO.loadTextureData("/Users/asubbotin/projects/game-playground/src/main/resources/img2.png")
+        val data2 = textureIO.loadTextureData("/img2.png")
         texImage2D(
             GL_TEXTURE_2D,
             0,
@@ -156,7 +159,7 @@ class TexRect : Scene {
 
         linkProgram(program)
         val strInfoLog = getProgramInfoLog(program)
-        System.err.println("Linker info $strInfoLog")
+        logger.log { "Linker info $strInfoLog" }
 
         shaderList.forEach { detachShader(program, it) }
 
@@ -178,7 +181,7 @@ class TexRect : Scene {
             GL3ES3.GL_GEOMETRY_SHADER -> strShaderType = "geometry"
             GL2ES2.GL_FRAGMENT_SHADER -> strShaderType = "fragment"
         }
-        System.err.println("Compiler lnfo log in $strShaderType shader: $strInfoLog")
+        logger.log{ "Compiler lnfo log in $strShaderType shader: $strInfoLog" }
 
         return shader
     }
@@ -192,7 +195,7 @@ class TexRect : Scene {
         bindTexture(GL_TEXTURE_2D, texture2)
 
         var trans = Mat4(1.0f);
-        val angle = sin(System.currentTimeMillis().toDouble()/ 10000.0).toFloat() * 360.0f
+        val angle = sin(time.getCurrentTime().toDouble()/ 10000.0).toFloat() * 360.0f
         trans = glm.rotate(trans, glm.radians(angle), Vec3(0.0, 0.0, 1.0));
         trans = glm.scale(trans, Vec3(0.5, 0.5, 0.5));
         val transformLoc = requireNotNull(getUniformLocation(program, "transform"))

@@ -48,7 +48,10 @@ private const val strFragmentShader = """
     }
     """
 
-class CoordSystem() : Scene {
+class CoordSystem(
+    private val time: Time,
+    private val logger: Logger,
+) : Scene {
     private var program: Program = 0
     private var texture1: Texture = 0
     private var texture2: Texture = 0
@@ -137,7 +140,7 @@ class CoordSystem() : Scene {
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        val data = textureIO.loadTextureData("/Users/asubbotin/projects/game-playground/src/main/resources/img.png")
+        val data = textureIO.loadTextureData("/img.png")
         texImage2D(
             GL_TEXTURE_2D,
             0,
@@ -156,7 +159,7 @@ class CoordSystem() : Scene {
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        val data2 = textureIO.loadTextureData("/Users/asubbotin/projects/game-playground/src/main/resources/img2.png")
+        val data2 = textureIO.loadTextureData("/img2.png")
         texImage2D(
             GL_TEXTURE_2D,
             0,
@@ -190,7 +193,7 @@ class CoordSystem() : Scene {
 
         linkProgram(program)
         val strInfoLog = getProgramInfoLog(program)
-        System.err.println("Linker info $strInfoLog")
+        logger.log { "Linker info $strInfoLog" }
 
         shaderList.forEach { detachShader(program, it) }
 
@@ -212,13 +215,13 @@ class CoordSystem() : Scene {
             GL3ES3.GL_GEOMETRY_SHADER -> strShaderType = "geometry"
             GL2ES2.GL_FRAGMENT_SHADER -> strShaderType = "fragment"
         }
-        System.err.println("Compiler lnfo log in $strShaderType shader: $strInfoLog")
+        logger.log { "Compiler lnfo log in $strShaderType shader: $strInfoLog" }
 
         return shader
     }
 
     override fun display(gl: Kgl) = with(gl) {
-        val currentFrame = System.currentTimeMillis() / 1000.0
+        val currentFrame = time.getCurrentTime().toDouble()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
@@ -279,7 +282,7 @@ class CoordSystem() : Scene {
             var model = Mat4(1.0f);
             model = glm.translate(model, cubePos)
             val angle = if (i > 0)
-                sin(System.currentTimeMillis().toDouble() / 10000.0 / i).toFloat() * 360.0f * i
+                sin(time.getCurrentTime().toDouble() / 10000.0 / i).toFloat() * 360.0f * i
             else
                 0f
             model = glm.rotate(model, glm.radians(angle), Vec3(1.0f, 0.0f, 0.0f));
