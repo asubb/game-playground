@@ -1,10 +1,10 @@
-package asubb.game.ecs
+package asubb.game.ecs.types
+
+import glm_.vec3.Vec3
 
 typealias Vector = FloatArray
 
-inline fun vector(x: Number, y: Number, z: Number): Vector {
-    return vector(x.toFloat(), y.toFloat(), z.toFloat())
-}
+inline fun vector(x: Number, y: Number, z: Number) = vector(x.toFloat(), y.toFloat(), z.toFloat())
 
 inline fun vector(x: Float, y: Float, z: Float): Vector {
     val v = FloatArray(3)
@@ -19,6 +19,8 @@ inline val Vector.y get() = this[1]
 inline val Vector.z get() = this[2]
 
 fun Vector.asString() = "[x=${x}, y=${y}, z=${z}]"
+
+fun Vector.toVec3() = Vec3(x, y, z)
 
 inline operator fun Vector.plus(v: Vector): Vector = vector(
     this[0] + v.x,

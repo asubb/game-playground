@@ -1,9 +1,10 @@
-package asubb.game.ecs
+package asubb.game.ecs.component.render
 
 import asubb.game.FragmentShader
 import asubb.game.ShaderProgram
 import asubb.game.TextureIO
 import asubb.game.VertexShader
+import asubb.game.ecs.Render
 import com.danielgergely.kgl.*
 import com.jogamp.common.nio.Buffers
 import glm_.mat4x4.Mat4

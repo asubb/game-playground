@@ -4,6 +4,11 @@ import assertk.Assert
 import assertk.all
 import assertk.assertThat
 import assertk.assertions.*
+import asubb.game.ecs.component.Motion
+import asubb.game.ecs.component.Transform
+import asubb.game.ecs.component.render.CubeRender
+import asubb.game.ecs.system.CubeWorldSystem
+import asubb.game.ecs.types.*
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.DescribeSpec
 
@@ -14,14 +19,14 @@ class CubeWorldSystemSpec : DescribeSpec({
     val expectedRotationMotion = vector(10, 0, 0)
 
     describe("A cube world system") {
-        val state = State(EntityManager())
-        val system = CubeWorldSystem(state, listOf(initialPosition to initialScale))
+        val world = World(EntityManager())
+        val system = CubeWorldSystem(world, listOf(initialPosition to initialScale))
 
         describe("Initialization") {
             system.init()
 
             it("should init Transform") {
-                val cubes = state.get<Transform>()
+                val cubes = world.get<Transform>()
                 assertThat(cubes).all {
                     size().isEqualTo(1)
                     index(0).all {
@@ -35,7 +40,7 @@ class CubeWorldSystemSpec : DescribeSpec({
             }
 
             it("should init Motion") {
-                val cubes = state.get<Motion>()
+                val cubes = world.get<Motion>()
                 assertThat(cubes).all {
                     size().isEqualTo(1)
                     index(0).all {
@@ -48,7 +53,7 @@ class CubeWorldSystemSpec : DescribeSpec({
             }
 
             it("should init CubeRender") {
-                val cubes = state.get<Render>()
+                val cubes = world.get<Render>()
                 assertThat(cubes).all {
                     size().isEqualTo(1)
                     index(0).all {
@@ -68,7 +73,7 @@ class CubeWorldSystemSpec : DescribeSpec({
                 system.update(timeSpan)
 
                 it("should update Transform") {
-                    val cubes = state.get<Transform>()
+                    val cubes = world.get<Transform>()
                     assertThat(cubes).all {
                         size().isEqualTo(1)
                         index(0).all {
@@ -86,7 +91,7 @@ class CubeWorldSystemSpec : DescribeSpec({
                 system.update(TimeSpan(1, 1))
 
                 it("should update Transform") {
-                    val cubes = state.get<Transform>()
+                    val cubes = world.get<Transform>()
                     assertThat(cubes).all {
                         size().isEqualTo(1)
                         index(0).all {
