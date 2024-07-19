@@ -1,4 +1,4 @@
-# The Game for my daughter
+# The Game for my Daughter
 
 One morning my daughter came by and asked: "Can we make a game?". She's almost 9 years old and enjoy video games the same as I do. But I didn't try to develop any game for like 15 years? And also have all these other things that comes along with adult-hood.
 
