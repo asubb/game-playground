@@ -1,7 +1,11 @@
 plugins {
     kotlin("jvm") version "1.9.23"
+    application
 }
 
+application {
+    mainClass.set("asubb.game.GameKt")
+}
 group = "asubb"
 version = "1.0-SNAPSHOT"
 
