@@ -6,7 +6,6 @@ import asubb.game.ecs.component.Transform
 import asubb.game.ecs.component.render.CubeRender
 import asubb.game.ecs.types.Vector
 import asubb.game.ecs.types.vector
-import kotlin.random.Random
 
 /**
  * System that rules the World! Creates, moves, rotates and destroys cubes.
@@ -25,7 +24,7 @@ class CubeWorldSystem(
         vector(1.5f, 0.2f, -1.5f) to vector(.5f, .5f, .5f),
         vector(-1.3f, 1.0f, -1.5f) to vector(1f, 2f, .2f),
     ),
-    private val rnd: Random = Random.Default,
+    private val random: GameRandom = GameRandom.default
 ) : System {
 
     private val cubes = mutableListOf<Entity>()
@@ -36,33 +35,31 @@ class CubeWorldSystem(
         }
     }
 
+    val removeCubeProbability = 0.01
     override fun update(timeSpan: TimeSpan) {
         if (cubes.size < 20) {
-            withProbability(0.2) {
+            random.withProbability(0.05) {
                 addCube(
-                    position = vector(rnd.nextDouble(-9.0, 9.0), rnd.nextDouble(-9.0, 9.0), rnd.nextDouble(-9.0, 9.0)),
-                    scale = vector(rnd.nextDouble(0.0, 3.0), rnd.nextDouble(0.0, 3.0), rnd.nextDouble(0.0, 3.0))
+                    position = random.nextVector(-9.0..9.0),
+                    scale = random.nextVector(0.0..3.0),
                 )
             }
         }
-        if (cubes.size > 5) {
-            withProbability(0.05) {
-                removeCube(rnd.nextInt(cubes.size))
-            }
-        }
-        withProbability(0.5) {
-            val cube = cubes[rnd.nextInt(cubes.size)]
-            world.withEntity<Motion>(cube) { motion ->
-                val newVector = vector(
-                    x = rnd.nextDouble(-1.0, 1.0),
-                    y = rnd.nextDouble(-1.0, 1.0),
-                    z = rnd.nextDouble(-1.0, 1.0)
-                )
-                withProbability(0.3) {
-                    world.updateComponent(cube, motion.copy(direction = newVector))
+        val activeCubes = cubes.subList(1, cubes.size)
+        if (activeCubes.isNotEmpty()) {
+            if (cubes.size > 5) {
+                random.withProbability(removeCubeProbability) {
+                    random.nextElement(activeCubes)
+                        .let { (idx, _) -> removeCube(idx) }
                 }
-                withProbability(0.3) {
-                    world.updateComponent(cube, motion.copy(rotation = newVector))
+            }
+            random.withProbability(0.5) {
+                val (_, cube) = random.nextElement(activeCubes)
+                world.withEntity<Motion>(cube) { motion ->
+                    val newVector = random.nextVector(-1.0..1.0)
+                    random.withProbability(0.3) {
+                        world.updateComponent(cube, motion.copy(rotation = newVector))
+                    }
                 }
             }
         }
@@ -85,7 +82,4 @@ class CubeWorldSystem(
         cubes.add(entity)
     }
 
-    private fun withProbability(probability: Double, body: () -> Unit) {
-        if (rnd.nextDouble() > 1.0 - probability) body()
-    }
 }

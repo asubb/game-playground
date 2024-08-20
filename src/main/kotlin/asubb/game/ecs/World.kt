@@ -39,6 +39,10 @@ class World(private val entityManager: EntityManager) {
         table[entity]?.let { it[component.key] = component }
     }
 
+    fun removeComponent(entity: Entity, componentKey: ComponentKey) {
+        table[entity]?.remove(componentKey)
+    }
+
     fun removeEntity(cube: Entity) {
         table.remove(cube)
         // TODO should components have destroy()?
@@ -76,6 +80,15 @@ inline fun <reified T : Component> World.get(entity: Entity): T? {
     return this.get(key, entity)
 }
 
+inline fun <reified T : Component> World.remove(entity: Entity) {
+    val key: ComponentKey = requireNotNull(T::class.simpleName)
+    removeComponent(entity, key)
+}
+
+inline fun <reified T : Component> World.set(entity: Entity, component: T) {
+    map<T>(entity) { _ -> component }
+}
+
 inline fun <reified T : Component> World.get(): List<Pair<Entity, T>> {
     val key: ComponentKey = requireNotNull(T::class.simpleName)
     return get(key)
@@ -86,3 +99,26 @@ inline fun <reified T : Component> World.forEach(noinline body: (Entity, T) -> U
     get<T>(key).forEach { (e, c) -> body(e, c) }
 }
 
+inline fun <reified T : Component> World.map(entity: Entity, mapper: (T?) -> T?) {
+    val existingComponent = this.get<T>(entity)
+    val newComponent = mapper(existingComponent)
+    if (existingComponent != null && newComponent != null) {
+        updateComponent(entity, newComponent)
+    } else if (existingComponent == null && newComponent != null) {
+        addComponent(entity, newComponent)
+    } else if (existingComponent != null && newComponent == null) {
+        val key: ComponentKey = requireNotNull(T::class.simpleName)
+        removeComponent(entity, key)
+    }
+}
+
+inline fun <reified T : Component> World.update(entity: Entity, mapper: (T) -> T?) {
+    val existingComponent = requireNotNull(this.get<T>(entity)) { "For entity $entity component ${T::class} is not found" }
+    val newComponent = mapper(existingComponent)
+    if (newComponent != null) {
+        updateComponent(entity, newComponent)
+    } else {
+        val key: ComponentKey = requireNotNull(T::class.simpleName)
+        removeComponent(entity, key)
+    }
+}

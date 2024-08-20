@@ -4,6 +4,7 @@ import asubb.game.TextureIO
 import asubb.game.ecs.*
 import asubb.game.ecs.component.Transform
 import asubb.game.ecs.component.Camera
+import asubb.game.ecs.component.Render
 import com.danielgergely.kgl.GL_DEPTH_TEST
 import com.danielgergely.kgl.Kgl
 import com.jogamp.opengl.GL

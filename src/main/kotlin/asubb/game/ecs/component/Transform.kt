@@ -9,6 +9,9 @@ import glm_.vec3.Vec3
 data class Transform(
     val position: Vector = vector(0f, 0f, 0f),
     val scale: Vector = vector(1f, 1f, 1f),
+    /**
+     * Rotation values for each axes in radians, by default no rotation or (0,0,0)
+     */
     val rotation: Vector = vector(0f, 0f, 0f),
 ) : Component {
 
@@ -18,9 +21,9 @@ data class Transform(
         var model = Mat4(1.0f)
         model = glm.scale(model, scale.x, scale.y, scale.z)
         model = glm.translate(model, position.x, position.y, position.z)
-        model = glm.rotate(model, glm.radians(rotation.x), Vec3(1.0f, 0.0f, 0.0f));
-        model = glm.rotate(model, glm.radians(rotation.y), Vec3(0.0f, 1.0f, 0.0f));
-        model = glm.rotate(model, glm.radians(rotation.z), Vec3(0.0f, 0.0f, 1.0f));
+        if (rotation.x > 0) model = glm.rotate(model, glm.radians(rotation.x), Vec3(1.0f, 0.0f, 0.0f));
+        if (rotation.y > 0) model = glm.rotate(model, glm.radians(rotation.y), Vec3(0.0f, 1.0f, 0.0f));
+        if (rotation.z > 0) model = glm.rotate(model, glm.radians(rotation.z), Vec3(0.0f, 0.0f, 1.0f));
         return model
     }
 

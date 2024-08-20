@@ -1,6 +1,7 @@
-package asubb.game.ecs
+package asubb.game.ecs.component
 
 import asubb.game.TextureIO
+import asubb.game.ecs.Component
 import com.danielgergely.kgl.Kgl
 import glm_.mat4x4.Mat4
 

@@ -17,13 +17,11 @@ class PhysicsSystem(private val world: World) : System {
     override fun update(timeSpan: TimeSpan) {
         world.forEach<Motion> { entity, motion ->
             world.withEntity<Transform>(entity) { transform ->
-                world.updateComponent(
-                    entity,
-                    transform.copy(
-                        position = motion.newPosition(timeSpan, transform.position),
-                        rotation = motion.newRotation(timeSpan, transform.rotation)
-                    )
+                val newTransform = transform.copy(
+                    position = motion.newPosition(timeSpan, transform.position),
+                    rotation = motion.newRotation(timeSpan, transform.rotation)
                 )
+                world.updateComponent(entity, newTransform)
             }
         }
     }

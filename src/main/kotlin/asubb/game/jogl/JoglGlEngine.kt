@@ -100,6 +100,7 @@ class JoglGlEngine(
     }
 
     override fun keyReleased(e: KeyEvent) {
+        scene.keyReleased(e.keyCode)
     }
 
     override fun mouseClicked(e: MouseEvent) {
