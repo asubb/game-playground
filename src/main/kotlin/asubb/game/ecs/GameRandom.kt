@@ -44,8 +44,9 @@ class GameRandomImpl(
     )
 
     override fun <T> nextElement(a: List<T>): Pair<Int, T> {
-        require(a.isNotEmpty()) { "Specified list is empty" }
-        val idx = rnd.nextInt(a.size)
+        val size = a.size
+        require(size > 0) { "Specified list is empty" }
+        val idx = rnd.nextInt(size)
         return idx to a[idx]
     }
 }

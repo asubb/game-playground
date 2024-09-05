@@ -45,12 +45,14 @@ class CubeWorldSystem(
                 )
             }
         }
-        val activeCubes = cubes.subList(1, cubes.size)
+        var activeCubes = cubes.subList(1, cubes.size)
         if (activeCubes.isNotEmpty()) {
             if (cubes.size > 5) {
                 random.withProbability(removeCubeProbability) {
                     random.nextElement(activeCubes)
                         .let { (idx, _) -> removeCube(idx) }
+                    // list got changed hence update the view
+                    activeCubes = cubes.subList(1, cubes.size)
                 }
             }
             random.withProbability(0.5) {
