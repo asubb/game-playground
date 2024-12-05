@@ -9,6 +9,7 @@ interface Scene {
     fun end(gl: Kgl)
 
     fun keyPressed(keyCode: Short) {}
+    fun keyReleased(keyCode: Short) {}
     fun mouseMoved(x: Int, y: Int) {}
     fun mouseWheelMoved(x: Float, y: Float) {}
 }
